@@ -1,4 +1,9 @@
 import requests
+import json
+import base64
+import hmac
+import hashlib
+import time
 
 class P2PB2B:
     BASE_URL = 'https://p2pb2b.io'
@@ -24,7 +29,7 @@ class P2PB2B:
 
     def __init__(self, apiKey, apiSecret):
         self.apiKey = apiKey
-        self.apiSecret = apiSecret
+        self.apiSecret = apiSecret.encode('utf-8')
 
     ################################################
     #
@@ -149,5 +154,29 @@ class P2PB2B:
         return response.json()
 
     def _postRequest(self, url, data = None):
-        response = requests.post(url, data = data)
+        timestamp = str(time.time()).split('.')[0]
+        nonce = {'nonce': timestamp}
+        if data is not None:
+            data.update(nonce)
+            payload = data
+        else:
+            payload = nonce
+            data = payload
+        data = json.dumps(data)
+        payload = json.dumps(payload)
+        payload = payload.encode('utf-8')
+        payload = base64.b64encode(payload)
+        signature = hmac.new(payload, self.apiSecret, hashlib.sha512).hexdigest()
+        payload = payload.decode('utf-8')
+        headers = {
+            'Content-type': 'application/json',
+            'X-TXC-APIKEY': self.apiKey,
+            'X-TXC-PAYLOAD': payload,
+            'X-TXC-SIGNATURE': signature
+        }
+        response = requests.post(
+            url,
+            data = data,
+            headers = headers
+        )
         return response.json()

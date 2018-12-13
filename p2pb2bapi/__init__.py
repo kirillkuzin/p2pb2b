@@ -7,24 +7,24 @@ import time
 
 class P2PB2B:
     BASE_URL = 'https://p2pb2b.io'
-    API_V1_URL = BASE_URL + '/api/v1'
+    API_V1_URL = '/api/v1'
     METHODS = {
-        'markets': API_V1_URL + '/public/markets',
-        'tickers': API_V1_URL + '/public/tickers',
-        'ticker': API_V1_URL + '/public/ticker',
-        'book': API_V1_URL + '/public/book',
-        'history': API_V1_URL + '/public/history',
-        'historyResult': API_V1_URL + '/public/history/result',
-        'products': API_V1_URL + '/public/products',
-        'symbols': API_V1_URL + '/public/symbols',
-        'depth': API_V1_URL + '/public/depth/result',
-        'newOrder': API_V1_URL + '/order/new',
-        'cancelOrder': API_V1_URL + '/order/cancel',
-        'orders': API_V1_URL + '/orders',
-        'balances': API_V1_URL + '/account/balances',
-        'balance': API_V1_URL + '/account/balance',
-        'order': API_V1_URL + '/account/order',
-        'orderHistory': API_V1_URL + '/account/order_history'
+        'markets': '/public/markets',
+        'tickers': '/public/tickers',
+        'ticker': '/public/ticker',
+        'book': '/public/book',
+        'history': '/public/history',
+        'historyResult': '/public/history/result',
+        'products': '/public/products',
+        'symbols': '/public/symbols',
+        'depth': '/public/depth/result',
+        'newOrder': '/order/new',
+        'cancelOrder': '/order/cancel',
+        'orders': '/orders',
+        'balances': '/account/balances',
+        'balance': '/account/balance',
+        'order': '/account/order',
+        'orderHistory': '/account/order_history'
     }
 
     def __init__(self, apiKey, apiSecret):
@@ -153,19 +153,18 @@ class P2PB2B:
         response = requests.get(url, params = params)
         return response.json()
 
-    def _postRequest(self, url, data = None):
+    def _postRequest(self, requestUrl, data = None):
         timestamp = str(time.time()).split('.')[0]
-        nonce = {'nonce': timestamp}
+        baseData = {
+            'request': self.API_V1_URL + requestUrl,
+            'nonce': timestamp
+        }
         if data is not None:
-            data.update(nonce)
-            payload = data
+            data.update(baseData)
         else:
-            payload = nonce
-            data = payload
+            data = baseData
         data = json.dumps(data)
-        payload = json.dumps(payload)
-        payload = payload.encode('utf-8')
-        payload = base64.b64encode(payload)
+        payload = base64.b64encode(data.encode('utf-8'))
         signature = hmac.new(payload, self.apiSecret, hashlib.sha512).hexdigest()
         payload = payload.decode('utf-8')
         headers = {
@@ -175,7 +174,7 @@ class P2PB2B:
             'X-TXC-SIGNATURE': signature
         }
         response = requests.post(
-            url,
+            url = self.BASE_URL + self.API_V1_URL + requestUrl,
             data = data,
             headers = headers
         )

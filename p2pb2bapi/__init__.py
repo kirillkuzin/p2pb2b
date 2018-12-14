@@ -29,7 +29,7 @@ class P2PB2B:
 
     def __init__(self, apiKey, apiSecret):
         self.apiKey = apiKey
-        self.apiSecret = apiSecret.encode('utf-8')
+        self.apiSecret = apiSecret.encode()
 
     ################################################
     #

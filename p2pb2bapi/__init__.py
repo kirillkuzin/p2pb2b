@@ -163,10 +163,10 @@ class P2PB2B:
             data.update(baseData)
         else:
             data = baseData
-        data = json.dumps(data)
-        payload = base64.b64encode(data.encode('utf-8'))
-        signature = hmac.new(payload, self.apiSecret, hashlib.sha512).hexdigest()
-        payload = payload.decode('utf-8')
+        data = json.dumps(data, separators = (',', ':'))
+        payload = base64.b64encode(data.encode())
+        signature = hmac.new(self.apiSecret, payload, hashlib.sha512).hexdigest()
+        payload = payload.decode()
         headers = {
             'Content-type': 'application/json',
             'X-TXC-APIKEY': self.apiKey,

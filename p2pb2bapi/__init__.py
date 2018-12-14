@@ -149,8 +149,11 @@ class P2PB2B:
     #
     ################################################
 
-    def _getRequest(self, url, params = None):
-        response = requests.get(url, params = params)
+    def _getRequest(self, requestUrl, params = None):
+        response = requests.get(
+            url = self.BASE_URL + self.API_V1_URL + requestUrl,
+            params = params
+        )
         return response.json()
 
     def _postRequest(self, requestUrl, data = None):
